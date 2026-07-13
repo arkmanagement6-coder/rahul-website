@@ -3,9 +3,9 @@
 
 // Database Configuration
 define('DB_HOST', 'localhost');
-define('DB_USER', 'root'); // cPanel users will update this
-define('DB_PASS', '');     // cPanel users will update this
-define('DB_NAME', 'smmpaynow'); // cPanel users will update this
+define('DB_USER', 'smmpa5f7_db_userssm'); // Pre-configured cPanel database user
+define('DB_PASS', 'Rahul@2709@');          // Pre-configured cPanel database password
+define('DB_NAME', 'smmpa5f7_ssmpaynow');      // Pre-configured cPanel database name
 
 // Razorpay Configuration (Merchant Key ID)
 define('RAZORPAY_KEY_ID', 'rzp_test_51a2b3c4d5e6f7'); // cPanel users will update this with their active key

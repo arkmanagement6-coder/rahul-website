@@ -3,7 +3,7 @@
 session_start();
 
 // Admin Authentication Password
-define('ADMIN_PASSKEY', 'admin@smmpaynow'); // cPanel users will update this password
+define('ADMIN_PASSKEY', 'Rahul@2709@'); // Pre-configured administrator passkey
 
 // Handle Login
 if (isset($_POST['action']) && $_POST['action'] === 'login') {
