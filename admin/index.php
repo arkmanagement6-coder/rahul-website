@@ -412,172 +412,229 @@ try {
                 </div>
             <?php endif; ?>
             
-            <!-- Statistics Overview Cards -->
-            <div class="metrics-grid">
-                <div class="metric-card volume">
-                    <div class="metric-header">
-                        <span class="metric-title">Total Volume</span>
-                        <div class="metric-icon"><i class="ri-money-rupee-circle-line"></i></div>
+            <!-- Statistics Overview Cards (Dashboard View) -->
+            <div id="section-dashboard" class="view-section">
+                <div class="metrics-grid">
+                    <div class="metric-card volume">
+                        <div class="metric-header">
+                            <span class="metric-title">Total Volume</span>
+                            <div class="metric-icon"><i class="ri-money-rupee-circle-line"></i></div>
+                        </div>
+                        <span class="metric-value">₹<?php echo number_format($total_volume, 2); ?></span>
                     </div>
-                    <span class="metric-value">₹<?php echo number_format($total_volume, 2); ?></span>
-                </div>
-                <div class="metric-card fees">
-                    <div class="metric-header">
-                        <span class="metric-title">Total Fees (0.7%)</span>
-                        <div class="metric-icon"><i class="ri-percent-line"></i></div>
+                    <div class="metric-card fees">
+                        <div class="metric-header">
+                            <span class="metric-title">Total Fees (0.7%)</span>
+                            <div class="metric-icon"><i class="ri-percent-line"></i></div>
+                        </div>
+                        <span class="metric-value">₹<?php echo number_format($total_fees, 2); ?></span>
                     </div>
-                    <span class="metric-value">₹<?php echo number_format($total_fees, 2); ?></span>
-                </div>
-                <div class="metric-card orders">
-                    <div class="metric-header">
-                        <span class="metric-title">Total Transfers</span>
-                        <div class="metric-icon"><i class="ri-list-check-3"></i></div>
+                    <div class="metric-card orders">
+                        <div class="metric-header">
+                            <span class="metric-title">Total Transfers</span>
+                            <div class="metric-icon"><i class="ri-list-check-3"></i></div>
+                        </div>
+                        <span class="metric-value"><?php echo $total_transfers; ?></span>
                     </div>
-                    <span class="metric-value"><?php echo $total_transfers; ?></span>
-                </div>
-                <div class="metric-card pending">
-                    <div class="metric-header">
-                        <span class="metric-title">Pending Orders</span>
-                        <div class="metric-icon"><i class="ri-time-line"></i></div>
+                    <div class="metric-card pending">
+                        <div class="metric-header">
+                            <span class="metric-title">Pending Orders</span>
+                            <div class="metric-icon"><i class="ri-time-line"></i></div>
+                        </div>
+                        <span class="metric-value"><?php echo $pending_count; ?></span>
                     </div>
-                    <span class="metric-value"><?php echo $pending_count; ?></span>
                 </div>
             </div>
             
             <!-- Money Transfers Section -->
-            <div class="section-header" id="transfers">
-                <h3>Recent Bank Transfers</h3>
-            </div>
-            <div class="card-table-wrapper">
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Date / User</th>
-                                <th>Sender Card</th>
-                                <th>Recipient Bank Details</th>
-                                <th>Amount / Fee</th>
-                                <th>Razorpay ID</th>
-                                <th>Status / Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (empty($transfers)): ?>
+            <div id="section-transfers" class="view-section" style="display: none;">
+                <div class="section-header">
+                    <h3>Recent Bank Transfers</h3>
+                </div>
+                <div class="card-table-wrapper">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
                                 <tr>
-                                    <td colspan="6" style="text-align: center; color: #9ca3af; padding: 40px 0;">No money transfer requests found.</td>
+                                    <th>Date / User</th>
+                                    <th>Sender Card</th>
+                                    <th>Recipient Bank Details</th>
+                                    <th>Amount / Fee</th>
+                                    <th>Razorpay ID</th>
+                                    <th>Status / Action</th>
                                 </tr>
-                            <?php else: ?>
-                                <?php foreach ($transfers as $t): ?>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($transfers)): ?>
                                     <tr>
-                                        <td>
-                                            <div class="user-info">
-                                                <span class="user-name"><?php echo htmlspecialchars($t['full_name'] ?? 'Guest'); ?></span>
-                                                <span class="user-subtext"><?php echo htmlspecialchars($t['email'] ?? 'No email'); ?></span>
-                                                <span class="user-subtext"><?php echo date('d M Y, h:i A', strtotime($t['created_at'])); ?></span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="user-info">
-                                                <span class="user-name"><?php echo htmlspecialchars($t['sender_card_holder']); ?></span>
-                                                <span class="user-subtext"><?php echo implode(' ', str_split($t['sender_card_number'], 4)); ?></span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="bank-details">
-                                                <strong>Name:</strong> <?php echo htmlspecialchars($t['recipient_name']); ?><br>
-                                                <strong>Bank:</strong> <?php echo htmlspecialchars($t['recipient_bank_name']); ?><br>
-                                                <strong>Acc Number:</strong> <?php echo htmlspecialchars($t['recipient_account_number']); ?><br>
-                                                <strong>IFSC:</strong> <?php echo htmlspecialchars($t['recipient_ifsc']); ?>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="user-info">
-                                                <span class="user-name" style="color: #34d399;">₹<?php echo number_format($t['transfer_amount'], 2); ?></span>
-                                                <span class="user-subtext">Total: ₹<?php echo number_format($t['amount'], 2); ?></span>
-                                                <span class="user-subtext">Fee: ₹<?php echo number_format($t['fee'], 2); ?></span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <code style="background-color: rgba(255, 255, 255, 0.05); padding: 4px 8px; border-radius: 6px; font-size: 11px;">
-                                                <?php echo htmlspecialchars($t['razorpay_payment_id'] ?? 'N/A'); ?>
-                                            </code>
-                                        </td>
-                                        <td>
-                                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                                <div>
-                                                    <span class="badge <?php echo htmlspecialchars($t['status']); ?>">
-                                                        <i class="ri-checkbox-blank-circle-fill" style="font-size: 8px;"></i>
-                                                        <?php echo ucfirst($t['status']); ?>
-                                                    </span>
-                                                </div>
-                                                <form class="status-form" method="POST">
-                                                    <input type="hidden" name="action" value="update_status">
-                                                    <input type="hidden" name="transfer_id" value="<?php echo $t['id']; ?>">
-                                                    <select class="status-select" name="status">
-                                                        <option value="pending" <?php echo $t['status'] === 'pending' ? 'selected' : ''; ?>>Pending</option>
-                                                        <option value="success" <?php echo $t['status'] === 'success' ? 'selected' : ''; ?>>Success</option>
-                                                        <option value="failed" <?php echo $t['status'] === 'failed' ? 'selected' : ''; ?>>Failed</option>
-                                                    </select>
-                                                    <button type="submit" class="status-btn">Save</button>
-                                                </form>
-                                            </div>
-                                        </td>
+                                        <td colspan="6" style="text-align: center; color: #9ca3af; padding: 40px 0;">No money transfer requests found.</td>
                                     </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
+                                <?php else: ?>
+                                    <?php foreach ($transfers as $t): ?>
+                                        <tr>
+                                            <td>
+                                                <div class="user-info">
+                                                    <span class="user-name"><?php echo htmlspecialchars($t['full_name'] ?? 'Guest'); ?></span>
+                                                    <span class="user-subtext"><?php echo htmlspecialchars($t['email'] ?? 'No email'); ?></span>
+                                                    <span class="user-subtext"><?php echo date('d M Y, h:i A', strtotime($t['created_at'])); ?></span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="user-info">
+                                                    <span class="user-name"><?php echo htmlspecialchars($t['sender_card_holder']); ?></span>
+                                                    <span class="user-subtext"><?php echo implode(' ', str_split($t['sender_card_number'], 4)); ?></span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="bank-details">
+                                                    <strong>Name:</strong> <?php echo htmlspecialchars($t['recipient_name']); ?><br>
+                                                    <strong>Bank:</strong> <?php echo htmlspecialchars($t['recipient_bank_name']); ?><br>
+                                                    <strong>Acc Number:</strong> <?php echo htmlspecialchars($t['recipient_account_number']); ?><br>
+                                                    <strong>IFSC:</strong> <?php echo htmlspecialchars($t['recipient_ifsc']); ?>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="user-info">
+                                                    <span class="user-name" style="color: #34d399;">₹<?php echo number_format($t['transfer_amount'], 2); ?></span>
+                                                    <span class="user-subtext">Total: ₹<?php echo number_format($t['amount'], 2); ?></span>
+                                                    <span class="user-subtext">Fee: ₹<?php echo number_format($t['fee'], 2); ?></span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <code style="background-color: rgba(255, 255, 255, 0.05); padding: 4px 8px; border-radius: 6px; font-size: 11px;">
+                                                    <?php echo htmlspecialchars($t['razorpay_payment_id'] ?? 'N/A'); ?>
+                                                </code>
+                                            </td>
+                                            <td>
+                                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                                    <div>
+                                                        <span class="badge <?php echo htmlspecialchars($t['status']); ?>">
+                                                            <i class="ri-checkbox-blank-circle-fill" style="font-size: 8px;"></i>
+                                                            <?php echo ucfirst($t['status']); ?>
+                                                        </span>
+                                                    </div>
+                                                    <form class="status-form" method="POST">
+                                                        <input type="hidden" name="action" value="update_status">
+                                                        <input type="hidden" name="transfer_id" value="<?php echo $t['id']; ?>">
+                                                        <select class="status-select" name="status">
+                                                            <option value="pending" <?php echo $t['status'] === 'pending' ? 'selected' : ''; ?>>Pending</option>
+                                                            <option value="success" <?php echo $t['status'] === 'success' ? 'selected' : ''; ?>>Success</option>
+                                                            <option value="failed" <?php echo $t['status'] === 'failed' ? 'selected' : ''; ?>>Failed</option>
+                                                        </select>
+                                                        <button type="submit" class="status-btn">Save</button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             
             <!-- Contact Inquiries Section -->
-            <div class="section-header" id="inquiries">
-                <h3>Contact Form Inquiries</h3>
-            </div>
-            <div class="card-table-wrapper">
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Sender</th>
-                                <th>Subject</th>
-                                <th>Message</th>
-                                <th>Date Received</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (empty($submissions)): ?>
+            <div id="section-inquiries" class="view-section" style="display: none;">
+                <div class="section-header">
+                    <h3>Contact Form Inquiries</h3>
+                </div>
+                <div class="card-table-wrapper">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
                                 <tr>
-                                    <td colspan="4" style="text-align: center; color: #9ca3af; padding: 40px 0;">No inquiries received yet.</td>
+                                    <th>Sender</th>
+                                    <th>Subject</th>
+                                    <th>Message</th>
+                                    <th>Date Received</th>
                                 </tr>
-                            <?php else: ?>
-                                <?php foreach ($submissions as $s): ?>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($submissions)): ?>
                                     <tr>
-                                        <td>
-                                            <div class="user-info">
-                                                <span class="user-name"><?php echo htmlspecialchars($s['name']); ?></span>
-                                                <span class="user-subtext"><?php echo htmlspecialchars($s['email']); ?></span>
-                                                <span class="user-subtext"><?php echo htmlspecialchars($s['phone'] ?? 'No Phone'); ?></span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <strong style="color: #fff;"><?php echo htmlspecialchars($s['subject'] ?? 'No Subject'); ?></strong>
-                                        </td>
-                                        <td>
-                                            <div style="max-width: 400px; white-space: pre-wrap; font-size: 12px; line-height: 1.5; color: #9ca3af;">
-                                                <?php echo htmlspecialchars($s['message']); ?>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="user-subtext"><?php echo date('d M Y, h:i A', strtotime($s['created_at'])); ?></span>
-                                        </td>
+                                        <td colspan="4" style="text-align: center; color: #9ca3af; padding: 40px 0;">No inquiries received yet.</td>
                                     </tr>
-                                <?php endforeach; ?>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
+                                <?php else: ?>
+                                    <?php foreach ($submissions as $s): ?>
+                                        <tr>
+                                            <td>
+                                                <div class="user-info">
+                                                    <span class="user-name"><?php echo htmlspecialchars($s['name']); ?></span>
+                                                    <span class="user-subtext"><?php echo htmlspecialchars($s['email']); ?></span>
+                                                    <span class="user-subtext"><?php echo htmlspecialchars($s['phone'] ?? 'No Phone'); ?></span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <strong style="color: #fff;"><?php echo htmlspecialchars($s['subject'] ?? 'No Subject'); ?></strong>
+                                            </td>
+                                            <td>
+                                                <div style="max-width: 400px; white-space: pre-wrap; font-size: 12px; line-height: 1.5; color: #9ca3af;">
+                                                    <?php echo htmlspecialchars($s['message']); ?>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="user-subtext"><?php echo date('d M Y, h:i A', strtotime($s['created_at'])); ?></span>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+            
+            <!-- SPA View Switcher Script -->
+            <script>
+            function showSection(sectionId) {
+                // Hide all sections
+                document.querySelectorAll('.view-section').forEach(sec => sec.style.display = 'none');
+                
+                // Remove active class from all links
+                document.querySelectorAll('.nav-links li').forEach(li => li.classList.remove('active'));
+                
+                // Show correct section
+                const targetSection = document.getElementById('section-' + sectionId);
+                if (targetSection) {
+                    targetSection.style.display = 'block';
+                }
+                
+                // Find matching link
+                const targetLink = document.querySelector(`.nav-links a[href="#${sectionId}"]`);
+                if (targetLink) {
+                    targetLink.parentElement.classList.add('active');
+                }
+                
+                // Update title
+                const headerTitle = document.querySelector('.header-title h2');
+                const headerSubtitle = document.querySelector('.header-title p');
+                if (sectionId === 'dashboard') {
+                    headerTitle.textContent = 'Admin Dashboard';
+                    headerSubtitle.textContent = 'Manage users, verify payments, and oversee bank settlements';
+                } else if (sectionId === 'transfers') {
+                    headerTitle.textContent = 'Bank Transfers';
+                    headerSubtitle.textContent = 'Overview and settle user bank transfer requests';
+                } else if (sectionId === 'inquiries') {
+                    headerTitle.textContent = 'Contact Inquiries';
+                    headerSubtitle.textContent = 'Read messages submitted by users through the contact form';
+                }
+            }
+
+            // Handle clicks
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const sectionId = this.getAttribute('href').substring(1);
+                    showSection(sectionId);
+                });
+            });
+
+            // Check url hash on page load
+            window.addEventListener('DOMContentLoaded', () => {
+                const hash = window.location.hash.substring(1) || 'dashboard';
+                showSection(hash);
+            });
+            </script>
         </div>
     </div>
 </body>
