@@ -6,10 +6,11 @@ require_once 'config.php';
 $path = $_GET['path'] ?? '';
 $method = $_SERVER['REQUEST_METHOD'];
 
-$pdo = getDbConnection();
+try {
+    $pdo = getDbConnection();
 
-// Simple router
-switch (true) {
+    // Simple router
+    switch (true) {
     // ----------------------------------------------------
     // AUTHENTICATION ENDPOINTS
     // ----------------------------------------------------
@@ -208,5 +209,10 @@ switch (true) {
     default:
         sendJsonResponse(['error' => 'Not Found: ' . $path], 404);
         break;
+    }
+} catch (Throwable $t) {
+    sendJsonResponse(['error' => $t->getMessage()], 500);
+} catch (Exception $e) {
+    sendJsonResponse(['error' => $e->getMessage()], 500);
 }
 ?>
