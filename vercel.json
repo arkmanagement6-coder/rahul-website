@@ -1,0 +1,7 @@
+{
+  "builds": [
+    { "src": "index.html", "use": "@vercel/static" },
+    { "src": "vite.svg", "use": "@vercel/static" },
+    { "src": "assets/**", "use": "@vercel/static" }
+  ]
+}
