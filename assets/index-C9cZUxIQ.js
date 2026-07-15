@@ -43,7 +43,7 @@ Option 2: Install and provide the "ws" package:
   let rzpKey=keyData?.key_id||`rzp_test_placeholder`;
   let orderRes=await fetch(window.location.origin+`/api/supabase/rest/v1/create_order`,{
     method:`POST`,
-    headers:{`Content-Type`:`application/json`},
+    headers:{"Content-Type":"application/json"},
     body:JSON.stringify({amount:Math.round(m*100)})
   });
   if(orderRes.status!==200){
@@ -62,7 +62,7 @@ Option 2: Install and provide the "ws" package:
       try{
         let verifyRes=await fetch(window.location.origin+`/api/supabase/rest/v1/verify_payment`,{
           method:`POST`,
-          headers:{`Content-Type`:`application/json`},
+          headers:{"Content-Type":"application/json"},
           body:JSON.stringify({
             razorpay_order_id:resp.razorpay_order_id,
             razorpay_payment_id:resp.razorpay_payment_id,
