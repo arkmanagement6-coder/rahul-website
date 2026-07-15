@@ -29,5 +29,67 @@
     </head>
   <body>
     <div id="root"></div>
+
+    <!-- Floating WhatsApp Button -->
+    <a href="https://wa.me/+918459300421/?text=*I_WANT_SWIPE_CARD" 
+       target="_blank" 
+       rel="noopener noreferrer" 
+       class="whatsapp-float-btn"
+       aria-label="Chat on WhatsApp">
+      <i class="ri-whatsapp-line"></i>
+      <span class="whatsapp-tooltip">Chat with us</span>
+    </a>
+
+    <style>
+      .whatsapp-float-btn {
+        position: fixed;
+        width: 60px;
+        height: 60px;
+        bottom: 30px;
+        right: 30px;
+        background-color: #25d366;
+        color: #fff;
+        border-radius: 50px;
+        text-align: center;
+        font-size: 30px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: all 0.3s ease;
+      }
+      .whatsapp-float-btn:hover {
+        background-color: #128c7e;
+        transform: scale(1.1);
+        box-shadow: 0px 6px 15px rgba(37, 211, 102, 0.4);
+      }
+      .whatsapp-float-btn i {
+        line-height: 1;
+      }
+      .whatsapp-tooltip {
+        visibility: hidden;
+        width: 100px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px 0;
+        position: absolute;
+        z-index: 10000;
+        right: 75px;
+        font-size: 12px;
+        font-weight: 500;
+        font-family: sans-serif;
+        opacity: 0;
+        transition: opacity 0.3s;
+        box-shadow: 0px 2px 5px rgba(0,0,0,0.2);
+      }
+      .whatsapp-float-btn:hover .whatsapp-tooltip {
+        visibility: visible;
+        opacity: 1;
+      }
+    </style>
   </body>
 </html>
