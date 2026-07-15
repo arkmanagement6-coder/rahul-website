@@ -7,8 +7,35 @@ define('DB_USER', 'smmpa5f7_db_userssm'); // Pre-configured cPanel database user
 define('DB_PASS', 'Rahul@2709@');          // Pre-configured cPanel database password
 define('DB_NAME', 'smmpa5f7_smmpaynow');      // Pre-configured cPanel database name
 
-// Razorpay Configuration (Merchant Key ID)
-define('RAZORPAY_KEY_ID', 'rzp_test_51a2b3c4d5e6f7'); // cPanel users will update this with their active key
+// Load Environment Variables (.env) from root directory
+function loadEnv($path) {
+    if (!file_exists($path)) {
+        return;
+    }
+    $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if (empty($line) || strpos($line, '#') === 0) {
+            continue;
+        }
+        $parts = explode('=', $line, 2);
+        if (count($parts) === 2) {
+            $name = trim($parts[0]);
+            $value = trim($parts[1]);
+            $value = trim($value, "\"'");
+            if (!array_key_exists($name, $_SERVER) && !array_key_exists($name, $_ENV)) {
+                putenv(sprintf('%s=%s', $name, $value));
+                $_ENV[$name] = $value;
+                $_SERVER[$name] = $value;
+            }
+        }
+    }
+}
+loadEnv(__DIR__ . '/../../.env');
+
+// Razorpay Configuration (Loaded from .env)
+define('RAZORPAY_KEY_ID', $_ENV['RAZORPAY_KEY_ID'] ?? '');
+define('RAZORPAY_KEY_SECRET', $_ENV['RAZORPAY_KEY_SECRET'] ?? '');
 
 // CORS headers for local/cross-origin requests
 header("Access-Control-Allow-Origin: *");

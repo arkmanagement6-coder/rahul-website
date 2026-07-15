@@ -205,6 +205,73 @@ try {
     case ($path === 'rest/v1/razorpay_key' && $method === 'GET'):
         sendJsonResponse(['key_id' => RAZORPAY_KEY_ID]);
         break;
+
+    // 9. Razorpay Order Creation Endpoint
+    case ($path === 'rest/v1/create_order' && $method === 'POST'):
+        $body = getRequestBody();
+        $amountInPaise = intval($body['amount'] ?? 0);
+        
+        if ($amountInPaise < 100) {
+            sendJsonResponse(['error' => 'Amount must be at least 100 paise (1 INR)'], 400);
+        }
+        
+        if (empty(RAZORPAY_KEY_ID) || empty(RAZORPAY_KEY_SECRET)) {
+            sendJsonResponse(['error' => 'Razorpay API credentials not configured'], 500);
+        }
+        
+        $ch = curl_init('https://api.razorpay.com/v1/orders');
+        $payload = json_encode([
+            'amount' => $amountInPaise,
+            'currency' => 'INR',
+            'receipt' => 'receipt_' . uniqid()
+        ]);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json'
+        ]);
+        curl_setopt($ch, CURLOPT_USERPWD, RAZORPAY_KEY_ID . ':' . RAZORPAY_KEY_SECRET);
+        
+        $response = curl_exec($ch);
+        $http_status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        
+        if ($http_status !== 200) {
+            sendJsonResponse(['error' => 'Razorpay API Error: ' . $response], 500);
+        }
+        
+        $orderData = json_decode($response, true);
+        sendJsonResponse([
+            'order_id' => $orderData['id'],
+            'amount' => $orderData['amount'],
+            'currency' => $orderData['currency']
+        ]);
+        break;
+
+    // 10. Razorpay Signature Verification Endpoint
+    case ($path === 'rest/v1/verify_payment' && $method === 'POST'):
+        $body = getRequestBody();
+        $orderId = $body['razorpay_order_id'] ?? '';
+        $paymentId = $body['razorpay_payment_id'] ?? '';
+        $signature = $body['razorpay_signature'] ?? '';
+        
+        if (empty($orderId) || empty($paymentId) || empty($signature)) {
+            sendJsonResponse(['error' => 'Missing required payment signature verification fields'], 400);
+        }
+        
+        if (empty(RAZORPAY_KEY_SECRET)) {
+            sendJsonResponse(['error' => 'Razorpay Secret key not configured'], 500);
+        }
+        
+        $generated = hash_hmac('sha256', $orderId . '|' . $paymentId, RAZORPAY_KEY_SECRET);
+        
+        if (hash_equals($generated, $signature)) {
+            sendJsonResponse(['status' => 'success']);
+        } else {
+            sendJsonResponse(['error' => 'Signature verification failed. Potential tampering detected.'], 400);
+        }
+        break;
         
     default:
         sendJsonResponse(['error' => 'Not Found: ' . $path], 404);
