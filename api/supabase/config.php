@@ -33,10 +33,6 @@ function loadEnv($path) {
 }
 loadEnv(__DIR__ . '/../../.env');
 
-// Razorpay Configuration (Loaded from .env)
-define('RAZORPAY_KEY_ID', $_ENV['RAZORPAY_KEY_ID'] ?? '');
-define('RAZORPAY_KEY_SECRET', $_ENV['RAZORPAY_KEY_SECRET'] ?? '');
-
 // CORS headers for local/cross-origin requests
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Authorization, Content-Type, apikey, X-Client-Info, X-Supabase-Api-Version");
