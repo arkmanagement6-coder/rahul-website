@@ -57,6 +57,21 @@ $submissions = [];
 try {
     $submissions = $pdo->query("SELECT * FROM contact_submissions ORDER BY created_at DESC")->fetchAll();
 } catch (PDOException $e) {}
+
+// Fetch Customer Reports & Accounts
+$customers = [];
+$total_customers = 0;
+try {
+    $customers = $pdo->query("SELECT u.id, u.email, u.created_at, p.full_name, p.phone,
+        COUNT(t.id) as total_transfers,
+        COALESCE(SUM(t.amount), 0) as total_volume
+        FROM users u 
+        LEFT JOIN profiles p ON u.id = p.id 
+        LEFT JOIN money_transfers t ON u.id = t.user_id 
+        GROUP BY u.id, u.email, u.created_at, p.full_name, p.phone 
+        ORDER BY u.created_at DESC")->fetchAll();
+    $total_customers = count($customers);
+} catch (PDOException $e) {}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -377,6 +392,12 @@ try {
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="#customers">
+                            <i class="ri-user-line"></i>
+                            <span>Customers</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="#transfers">
                             <i class="ri-exchange-funds-line"></i>
                             <span>Transfers</span>
@@ -403,6 +424,12 @@ try {
                     <h2>Admin Dashboard</h2>
                     <p>Manage users, verify payments, and oversee bank settlements</p>
                 </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <button id="refresh-toggle-btn" onclick="toggleAutoRefresh()" style="background-color: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); color: #818cf8; padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.3s;">
+                        <i class="ri-refresh-line"></i>
+                        <span id="refresh-btn-text">Auto-Refresh: OFF</span>
+                    </button>
+                </div>
             </div>
             
             <?php if (!empty($update_message)): ?>
@@ -414,7 +441,7 @@ try {
             
             <!-- Statistics Overview Cards (Dashboard View) -->
             <div id="section-dashboard" class="view-section">
-                <div class="metrics-grid">
+                <div class="metrics-grid" style="grid-template-columns: repeat(5, 1fr);">
                     <div class="metric-card volume">
                         <div class="metric-header">
                             <span class="metric-title">Total Volume</span>
@@ -442,6 +469,13 @@ try {
                             <div class="metric-icon"><i class="ri-time-line"></i></div>
                         </div>
                         <span class="metric-value"><?php echo $pending_count; ?></span>
+                    </div>
+                    <div class="metric-card customers" style="background-color: #12141c; border: 1px solid rgba(255, 255, 255, 0.03); border-radius: 20px; padding: 24px;">
+                        <div class="metric-header">
+                            <span class="metric-title">Customers</span>
+                            <div class="metric-icon" style="background-color: rgba(168, 85, 247, 0.1); color: #c084fc;"><i class="ri-user-3-line"></i></div>
+                        </div>
+                        <span class="metric-value"><?php echo $total_customers; ?></span>
                     </div>
                 </div>
             </div>
@@ -585,8 +619,84 @@ try {
                 </div>
             </div>
             
-            <!-- SPA View Switcher Script -->
+            <!-- Registered Customers Section -->
+            <div id="section-customers" class="view-section" style="display: none;">
+                <div class="section-header">
+                    <h3>Registered Customers & User Reports</h3>
+                </div>
+                <div class="card-table-wrapper">
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Customer Name / Email</th>
+                                    <th>Phone Number</th>
+                                    <th>Total Transfers</th>
+                                    <th>Total Volume</th>
+                                    <th>Registered Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (empty($customers)): ?>
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; color: #9ca3af; padding: 40px 0;">No registered customers found.</td>
+                                    </tr>
+                                <?php else: ?>
+                                    <?php foreach ($customers as $c): ?>
+                                        <tr>
+                                            <td>
+                                                <div class="user-info">
+                                                    <span class="user-name"><?php echo htmlspecialchars($c['full_name'] ?? 'User #' . $c['id']); ?></span>
+                                                    <span class="user-subtext"><?php echo htmlspecialchars($c['email']); ?></span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span style="color: #d1d5db; font-size: 13px;"><?php echo htmlspecialchars($c['phone'] ?? 'N/A'); ?></span>
+                                            </td>
+                                            <td>
+                                                <span class="badge success">
+                                                    <i class="ri-list-check-3" style="font-size: 10px;"></i>
+                                                    <?php echo intval($c['total_transfers']); ?> Transfers
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <strong style="color: #4ade80;">₹<?php echo number_format(floatval($c['total_volume']), 2); ?></strong>
+                                            </td>
+                                            <td>
+                                                <span class="user-subtext"><?php echo date('d M Y, h:i A', strtotime($c['created_at'])); ?></span>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- SPA View Switcher & Auto-Refresh Script -->
             <script>
+            let autoRefreshTimer = null;
+
+            function toggleAutoRefresh() {
+                const btnText = document.getElementById('refresh-btn-text');
+                const btn = document.getElementById('refresh-toggle-btn');
+                if (autoRefreshTimer) {
+                    clearInterval(autoRefreshTimer);
+                    autoRefreshTimer = null;
+                    btnText.textContent = 'Auto-Refresh: OFF';
+                    btn.style.backgroundColor = 'rgba(99, 102, 241, 0.15)';
+                    btn.style.color = '#818cf8';
+                } else {
+                    autoRefreshTimer = setInterval(() => {
+                        window.location.reload();
+                    }, 15000);
+                    btnText.textContent = 'Auto-Refresh: ON (15s)';
+                    btn.style.backgroundColor = 'rgba(52, 211, 153, 0.2)';
+                    btn.style.color = '#34d399';
+                }
+            }
+
             function showSection(sectionId) {
                 // Hide all sections
                 document.querySelectorAll('.view-section').forEach(sec => sec.style.display = 'none');
@@ -612,6 +722,9 @@ try {
                 if (sectionId === 'dashboard') {
                     headerTitle.textContent = 'Admin Dashboard';
                     headerSubtitle.textContent = 'Manage users, verify payments, and oversee bank settlements';
+                } else if (sectionId === 'customers') {
+                    headerTitle.textContent = 'Registered Customers';
+                    headerSubtitle.textContent = 'View registered accounts and their complete transaction reports';
                 } else if (sectionId === 'transfers') {
                     headerTitle.textContent = 'Bank Transfers';
                     headerSubtitle.textContent = 'Overview and settle user bank transfer requests';
